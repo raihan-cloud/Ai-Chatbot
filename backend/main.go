@@ -50,7 +50,7 @@ func main() {
 		}
 
 		// Gunakan model flash-lite untuk kecepatan tinggi
-		model := client.GenerativeModel("model/gemini-2.5-flash-lite")
+		model := client.GenerativeModel("gemini-2.5-flash-lite")
 
 		// --- BAGIAN KONFIGURASI CASE CLOUD & IOT ---
 		model.SystemInstruction = &genai.Content{
