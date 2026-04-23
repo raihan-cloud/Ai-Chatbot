@@ -1,7 +1,9 @@
+version: '3.8'
+
 services:
-  # Service Backend (Golang)
+  # Service Backend (Golang) - Milik Raihan
   backend:
-    image: raihanmzfr/chatbot_server:v2  # Gunakan v2 yang sudah ada fitur history
+    image: raihanmzfr/chatbot_server:v2
     container_name: chatbot-backend
     environment:
       - GEMINI_API_KEY=AIzaSyBPPa9T6GejYatJ7PVgnq3GuiSVcGcLv8s
@@ -12,19 +14,19 @@ services:
     networks:
       - chatbot-network
 
-  # Service Frontend (Nginx/Web)
+  # Service Frontend (Nginx/Web) - Milik Kawan
   frontend:
-    build: ./frontend  # Docker akan mencari Dockerfile di folder frontend
+    # GANTI 'akun_kawan' dengan username asli kawanmu di Docker Hub
+    image: arzana22/chatbot_client:v1 
     container_name: chatbot-frontend
     ports:
       - "80:80"        # Akses via browser di http://localhost
     depends_on:
-      - backend        # Memastikan backend jalan duluan
+      - backend
     restart: always
     networks:
       - chatbot-network
 
-# Network agar antar container bisa saling komunikasi lewat nama service
 networks:
   chatbot-network:
     driver: bridge
