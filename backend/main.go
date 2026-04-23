@@ -26,6 +26,19 @@ func main() {
 		c.Next()
 	})
 
+	// Ambil API Key sekali saat server start
+	apiKey := os.Getenv("GEMINI_API_KEY")
+	if apiKey == "" {
+		panic("[ERROR] GEMINI_API_KEY tidak ditemukan di environment variable")
+	}
+
+	ctx := context.Background()
+	client, err := genai.NewClient(ctx, option.WithAPIKey(apiKey))
+	if err != nil {
+		panic(fmt.Sprintf("[ERROR] Gagal membuat client: %v", err))
+	}
+	defer client.Close()
+
 	r.POST("/chat", func(c *gin.Context) {
 		var input struct {
 			Message string `json:"message"`
@@ -36,26 +49,20 @@ func main() {
 			return
 		}
 
-		// Pastikan Anda sudah menjalankan: export GEMINI_API_KEY="kunci_anda"
-		apiKey := os.Getenv("GEMINI_API_KEY")
-		if apiKey == "" {
-			fmt.Println("[ERROR] GEMINI_API_KEY tidak ditemukan di environment variable")
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Server configuration error: Missing API Key"})
-			return
+		// Gunakan model flash-lite untuk kecepatan tinggi
+		model := client.GenerativeModel("gemini-1.5-flash")
+
+		// --- BAGIAN KONFIGURASI CASE CLOUD & IOT ---
+		model.SystemInstruction = &genai.Content{
+			Parts: []genai.Part{
+				genai.Text("Kamu adalah pakar Cloud Computing dan IoT. " +
+					"Tugasmu adalah menjawab pertanyaan seputar DevOps, AWS, Azure, Google Cloud, ESP32, MQTT, dan sensor. " +
+					"ATURAN KERAS: Jangan gunakan format Markdown. Jangan gunakan simbol **, ##, list -, atau tabel. " +
+					"Berikan jawaban dalam bentuk teks polos (plain text). " +
+					"Jika user bertanya di luar Cloud atau IoT, arahkan mereka kembali ke topik tersebut dengan sopan."),
+			},
 		}
 
-		ctx := context.Background()
-		client, err := genai.NewClient(ctx, option.WithAPIKey(apiKey))
-		if err != nil {
-			fmt.Printf("[ERROR] Gagal membuat client: %v\n", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal terhubung ke layanan AI"})
-			return
-		}
-		defer client.Close()
-
-		model := client.GenerativeModel("models/gemini-2.5-flash-lite")
-		
-		// Proses Generate Content
 		resp, err := model.GenerateContent(ctx, genai.Text(input.Message))
 		if err != nil {
 			fmt.Printf("[ERROR] Gemini API Error: %v\n", err)

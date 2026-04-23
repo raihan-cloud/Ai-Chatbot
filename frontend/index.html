@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NexusAI — Chatbot</title>
+<title>NexusAI — Cloud & IoT Assistant</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -49,13 +49,22 @@
     background: var(--bg-primary);
     color: var(--text-primary);
     height: 100vh;
-    height: 100dvh; /* Support for mobile address bar */
+    height: 100dvh;
     overflow: hidden;
     display: flex;
-    transition: background var(--transition);
+    transition: background var(--transition), color var(--transition);
   }
 
-  /* SIDEBAR RESPONSIVE */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+  }
+  .overlay.show { display: block; }
+
   .sidebar {
     width: var(--sidebar-w);
     background: var(--bg-secondary);
@@ -68,21 +77,8 @@
   }
 
   @media (max-width: 768px) {
-    .sidebar {
-      position: fixed;
-      left: 0; top: 0; bottom: 0;
-      transform: translateX(-100%);
-    }
+    .sidebar { position: fixed; left: 0; top: 0; bottom: 0; transform: translateX(-100%); }
     .sidebar.open { transform: translateX(0); }
-    .overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(4px);
-      z-index: 999;
-    }
-    .overlay.show { display: block; }
   }
 
   .sidebar-header {
@@ -107,9 +103,7 @@
     border: none; border-radius: 12px;
     font-weight: 600; cursor: pointer;
     display: flex; align-items: center; justify-content: center; gap: 8px;
-    transition: filter 0.2s;
   }
-  .new-chat-btn:hover { filter: brightness(1.1); }
 
   .chat-list { flex: 1; overflow-y: auto; padding: 0 12px; }
   .chat-item {
@@ -120,7 +114,6 @@
   }
   .chat-item:hover, .chat-item.active { background: var(--bg-tertiary); color: var(--text-primary); }
 
-  /* MAIN CONTENT */
   .main { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
 
   .topbar {
@@ -129,7 +122,6 @@
     border-bottom: 1px solid var(--border);
     display: flex; align-items: center;
     padding: 0 16px; gap: 12px;
-    position: sticky; top: 0; z-index: 10;
   }
 
   .menu-toggle {
@@ -141,7 +133,6 @@
 
   .topbar-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600; flex: 1; }
 
-  /* MESSAGES */
   .messages-wrap { flex: 1; overflow-y: auto; padding: 20px 0; }
   .messages-inner { max-width: 800px; margin: 0 auto; padding: 0 16px; display: flex; flex-direction: column; gap: 24px; }
 
@@ -161,15 +152,12 @@
     font-size: 15px; line-height: 1.5; 
     max-width: calc(100% - 44px);
     word-wrap: break-word;
+    white-space: pre-wrap; /* Menjaga line break dari plain text */
   }
   .bubble.ai { background: var(--ai-bubble); border: 1px solid var(--border); border-top-left-radius: 4px; }
   .bubble.user { background: var(--user-bubble); color: var(--user-text); border-top-right-radius: 4px; }
 
-  /* INPUT AREA */
-  .input-area { 
-    padding: 16px; 
-    background: linear-gradient(transparent, var(--bg-primary) 30%);
-  }
+  .input-area { padding: 16px; background: linear-gradient(transparent, var(--bg-primary) 30%); }
   .input-container {
     max-width: 800px; margin: 0 auto;
     background: var(--bg-secondary);
@@ -190,12 +178,9 @@
     background: var(--accent); color: white; border: none;
     width: 36px; height: 36px; border-radius: 10px;
     cursor: pointer; display: flex; align-items: center; justify-content: center;
-    transition: transform 0.1s; flex-shrink: 0; margin-bottom: 2px;
+    transition: transform 0.1s; flex-shrink: 0;
   }
-  .send-btn:active { transform: scale(0.9); }
-  .send-btn:disabled { background: var(--text-muted); cursor: not-allowed; }
 
-  /* TYPING ANIMATION */
   .typing { display: flex; gap: 4px; padding: 4px 0; }
   .dot { width: 6px; height: 6px; background: var(--text-muted); border-radius: 50%; animation: blink 1.4s infinite; }
   .dot:nth-child(2) { animation-delay: 0.2s; }
@@ -204,7 +189,6 @@
   @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
 
-  /* SCROLLBAR */
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 </style>
@@ -220,19 +204,17 @@
       <span class="logo-text">NexusAI</span>
     </div>
   </div>
-  <button class="new-chat-btn" onclick="location.reload()">
-    <span>+</span> Baru
-  </button>
+  <button class="new-chat-btn" onclick="location.reload()">+ Baru</button>
   <div class="chat-list">
-    <div class="chat-item active">Percakapan Saat Ini</div>
-    <div class="chat-item">Riwayat Chat...</div>
+    <div class="chat-item active">Cloud & IoT Session</div>
+    <div class="chat-item">Riwayat akan muncul di sini...</div>
   </div>
 </aside>
 
 <main class="main">
   <header class="topbar">
     <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-    <span class="topbar-title">NexusAI Chat v2</span>
+    <span class="topbar-title">Cloud & IoT Expert Assistant</span>
     <button onclick="toggleTheme()" style="background:none; border:none; font-size: 1.2rem; cursor:pointer;">🌓</button>
   </header>
 
@@ -240,14 +222,14 @@
     <div class="messages-inner" id="chatWindow">
       <div class="msg">
         <div class="msg-avatar ai">N</div>
-        <div class="bubble ai">Halo Raihan! Ada yang bisa saya bantu hari ini?</div>
+        <div class="bubble ai">Halo Raihan! Tanyakan apapun seputar Cloud Computing (AWS/DevOps) atau IoT (ESP32/MQTT). Saya akan menjawab tanpa format markdown.</div>
       </div>
     </div>
   </div>
 
   <div class="input-area">
     <div class="input-container">
-      <textarea id="chatInput" placeholder="Kirim pesan..." rows="1"></textarea>
+      <textarea id="chatInput" placeholder="Tanya seputar Cloud atau IoT..." rows="1"></textarea>
       <button class="send-btn" id="sendBtn" onclick="sendMessage()">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
       </button>
@@ -262,13 +244,18 @@
   const scrollArea = document.getElementById('scrollArea');
   let isProcessing = false;
 
-  // Auto-resize textarea
+  // Pembersih Markdown jika Backend tidak sengaja mengirimkannya
+  function cleanMarkdown(text) {
+    return text
+      .replace(/[#*`_~]/g, '') // Hapus simbol bold, italic, code, dsb.
+      .trim();
+  }
+
   chatInput.addEventListener('input', function() {
     this.style.height = 'auto';
     this.style.height = (this.scrollHeight) + 'px';
   });
 
-  // Handle Enter Key
   chatInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey && window.innerWidth > 768) {
       e.preventDefault();
@@ -283,8 +270,7 @@
 
   function toggleTheme() {
     const theme = document.documentElement.getAttribute('data-theme');
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', newTheme);
+    document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'light' : 'dark');
   }
 
   async function sendMessage() {
@@ -304,15 +290,18 @@
       const res = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: "raihan-user", message: text })
+        body: JSON.stringify({ message: text })
       });
       
       const data = await res.json();
       document.getElementById(typingId).remove();
-      addMessage(data.reply || "Maaf, terjadi kesalahan.", 'ai');
+      
+      // Bersihkan respon sebelum ditampilkan
+      const finalReply = cleanMarkdown(data.reply || "Maaf, terjadi kesalahan.");
+      addMessage(finalReply, 'ai');
     } catch (err) {
       if(document.getElementById(typingId)) document.getElementById(typingId).remove();
-      addMessage("Gagal terhubung ke Server Go. Pastikan Backend aktif.", 'ai');
+      addMessage("Koneksi gagal. Pastikan Backend sudah berjalan di raihan-pc.", 'ai');
     } finally {
       isProcessing = false;
       scrollToBottom();
