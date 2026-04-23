@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # Service Backend (Golang) - Milik Raihan
   backend:
-    image: raihanmzfr/chatbot_server:v2
+    image: raihanmzfr/chatbot_server:v1
     container_name: chatbot-backend
     environment:
       - GEMINI_API_KEY=AIzaSyBPPa9T6GejYatJ7PVgnq3GuiSVcGcLv8s
