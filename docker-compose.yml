@@ -3,10 +3,10 @@ version: '3.8'
 services:
   # Service Backend (Golang) - Milik Raihan
   backend:
-    image: raihanmzfr/chatbot_server:v2
+    image: raihanmzfr/chatbot_server:v1
     container_name: chatbot-backend
     environment:
-      - GEMINI_API_KEY=AIzaSyBPPa9T6GejYatJ7PVgnq3GuiSVcGcLv8s
+      - GEMINI_API_KEY=AIzaSyARbUhIIPApg-LGxr7Q0O-tR0Dx4epfQ4M
       - GIN_MODE=release
     ports:
       - "8080:8080"
